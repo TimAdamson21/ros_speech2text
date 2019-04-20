@@ -3,6 +3,7 @@
 import numpy as np
 
 from collections import deque
+from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 
 import rospy
 import time
@@ -121,9 +122,10 @@ class SpeechDetector:
         Number of silent chunks to end detected utterance.
     """
 
-    def __init__(self, rate, threshold, dynamic_threshold=False,
+    def __init__(self, TOPIC_BASE, rate, threshold, dynamic_threshold=False,
                  dynamic_threshold_frame=3, chunk_size=None,
                  min_average_volume=0., num_silent=4):
+        self.TOPIC_BASE = TOPIC_BASE
         self.rate = rate
         if dynamic_threshold:
             self.silence_detect = DynamicSilenceDetector(
@@ -140,6 +142,17 @@ class SpeechDetector:
         # started and therefore whether the start_utterance message should be sent or not
         self.not_silent = 0
         self.reset()
+
+        self.pause_detection = True
+        self.pause_detection_srv = rospy.Service(self.TOPIC_BASE + '/pause_detection_srv', SetBool, self.pause_detection_cb)
+
+    def pause_detection_cb(self, req):
+        self.pause_detection = req.data
+        print(self.pause_detection)
+        resp = SetBoolResponse()
+        resp.success = True
+        return resp
+
 
     def reset(self):
         self.silence_detect.reset_average()
@@ -206,26 +219,30 @@ class SpeechDetector:
         self.reset()
         stream.start_stream()  # TODO: Why not record during recognition
         previously = False
+        count = 0
         while not self.found:
-            # main loop for audio capturing
+            if not self.pause_detection:
+                # main loop for audio capturing
+                print("Inner Lap", count)
+                count += 1
 
-            # send the start_utterance message if there is a significant number of blocks of sound
-            # but also only if it is the beginning of the utterance
-            if self.sig_non_silent & start_speech:
-                aud_data = self.chunks
-                return aud_data, 0, 0, True
+                # send the start_utterance message if there is a significant number of blocks of sound
+                # but also only if it is the beginning of the utterance
+                if self.sig_non_silent & start_speech:
+                    aud_data = self.chunks
+                    return aud_data, 0, 0, True
 
-            if self.in_utterance and not previously:
-                start_callback()
-            previously = self.in_utterance
+                if self.in_utterance and not previously:
+                    start_callback()
+                previously = self.in_utterance
 
-            if rospy.is_shutdown():
-                return None, None, None
+                if rospy.is_shutdown():
+                    return None, None, None
 
-            snd_data = np.frombuffer(
-                stream.read(self.chunk_size, exception_on_overflow=False),
-                dtype=BUFFER_NP_TYPE)
-            self.treat_chunk(snd_data)
+                snd_data = np.frombuffer(
+                    stream.read(self.chunk_size, exception_on_overflow=False),
+                    dtype=BUFFER_NP_TYPE)
+                self.treat_chunk(snd_data)
 
 
         stream.stop_stream()

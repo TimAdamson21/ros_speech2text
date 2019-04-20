@@ -76,6 +76,7 @@ class SpeechRecognizer(object):
                 self.node_name + '/enable_start_utterance', False)
         # new instance of the SpeechDetector class found in speech_detection.py
         self.speech_detector = SpeechDetector(
+            self.TOPIC_BASE,
             self.sample_rate,
             threshold,
             dynamic_threshold=dynamic_thresholding,
