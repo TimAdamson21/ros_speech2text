@@ -108,8 +108,10 @@ class SpeechRecognizer(object):
     def _init_stream(self):
         self.pa_handler = pyaudio.PyAudio()
         device_list = list_audio_devices(self.pa_handler)
+        print(device_list)
         input_idx = rospy.get_param(self.node_name + '/audio_device_idx', None)
         input_name = rospy.get_param(self.node_name + '/audio_device_name', None)
+        print("input_name", input_name)
         if input_idx is None:
             input_idx = self.pa_handler.get_default_input_device_info()['index']
             if input_name is not None:
@@ -127,6 +129,10 @@ class SpeechRecognizer(object):
                 self.node_name,
                 self.pa_handler.get_device_info_by_index(input_idx)['name'])
             )
+            print("FORMAT", FORMAT)
+            print("rate", self.sample_rate)
+            print("input_idx", input_idx)
+            print("chunk_size", self.speech_detector.chunk_size)
             self.stream = self.pa_handler.open(
                 format=FORMAT, channels=1, rate=self.sample_rate, input=True,
                 start=False, input_device_index=input_idx, output=False,
