@@ -221,7 +221,7 @@ class SpeechDetector:
         previously = False
         count = 0
         while not self.found:
-            if not self.pause_detection:
+            if not self.pause_detection or rospy.is_shutdown():
                 # main loop for audio capturing
                 print("Inner Lap", count)
                 count += 1
