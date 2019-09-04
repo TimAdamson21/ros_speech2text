@@ -129,10 +129,12 @@ class SpeechRecognizer(object):
                 self.node_name,
                 self.pa_handler.get_device_info_by_index(input_idx)['name'])
             )
+            print("MaxChannels", self.pa_handler.get_device_info_by_index(input_idx)['maxOutputChannels'])
             print("FORMAT", FORMAT)
             print("rate", self.sample_rate)
             print("input_idx", input_idx)
             print("chunk_size", self.speech_detector.chunk_size)
+            print("Device info: ", self.pa_handler.get_device_info_by_index(input_idx))
             self.stream = self.pa_handler.open(
                 format=FORMAT, channels=1, rate=self.sample_rate, input=True,
                 start=False, input_device_index=input_idx, output=False,

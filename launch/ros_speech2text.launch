@@ -15,7 +15,7 @@
 <!--         <param    name ="audio_device_idx" value="3" />-->
 
         <!-- device name of audio source. Only used if audio_device_idx is not set. Uses the first device that contains the given name (case insensitive). /-->
-        <param    name ="audio_device_name" value="(hw:1,0)" />
+        <param    name ="audio_device_name" value="VocalFusion" />
 
         <!-- rate for your audio capturing device. Tune for the mic you are using. /-->
         <param    name ="audio_rate" value="48000" />
